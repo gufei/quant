@@ -3,6 +3,7 @@ import datetime
 import redis
 
 
+# 30天涨幅超过20%，并且在最近10天维持6%箱体振荡
 class MyStrategy01(bt.Strategy):
 
     def log(self, txt, dt=None):
@@ -25,6 +26,11 @@ class MyStrategy01(bt.Strategy):
     def __init__(self):
         self.date_now = datetime.datetime.now().strftime('%Y-%m-%d')
         self.redis = redis.Redis(host='localhost', port=6379, decode_responses=True)
+
+        self.sma = dict()
+        for data in self.datas:
+            self.sma[data._name] = bt.indicators.SimpleMovingAverage(
+                data, period=10)
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -63,8 +69,8 @@ class MyStrategy01(bt.Strategy):
 
     def next(self):
 
-        # if self.date_now != self.datas[0].datetime.date(0):
-        #     return
+        if self.date_now != self.datas[0].datetime.date(0):
+            return
 
         for data in self.datas:
             # 获得相关持仓
@@ -77,12 +83,11 @@ class MyStrategy01(bt.Strategy):
                         # self.log("%s ,-30 close %2.f,close %2.f" % (
                         #     data._name, data.lines.close[-30], data.lines.close[0]))
 
-                        close = data.lines.close[0]
                         high = max(data.lines.high.get(size=10))
                         low = min(data.lines.low.get(size=10))
 
-                        xt_high = close * 1.03
-                        xt_low = close * 0.97
+                        xt_high = self.sma[0] * 1.03
+                        xt_low = self.sma[0] * 0.97
 
                         if high < xt_high and low > xt_low:
                             self.log('买入 %s , %.2f' % (data._name, data.close[0]))
