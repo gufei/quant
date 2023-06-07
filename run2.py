@@ -61,10 +61,15 @@ if __name__ == '__main__':
 
     cerebro.addstrategy(strategy_big_small_rotate.StrategyBigSmallRotate)
 
+    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
+
     print('回测开始，资产价值: %.2f' % cerebro.broker.getvalue())
 
-    cerebro.run()
+    thestrats = cerebro.run()
+    thestrat = thestrats[0]
 
     print('回测完成，资产价值: %.2f' % cerebro.broker.getvalue())
+
+    print('Sharpe Ratio:', thestrat.analyzers.mysharpe.get_analysis())
 
     cerebro.plot()
