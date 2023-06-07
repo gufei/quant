@@ -49,7 +49,7 @@ if __name__ == '__main__':
             volume=5,
             openinterest=-1
         )
-        cerebro.adddata(data, name=stock['成分券代码'])
+        cerebro.adddata(data, name=stock['股票代码'])
 
     cerebro.addstrategy(my_strategy.MyStrategy01)
 
