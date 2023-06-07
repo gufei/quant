@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 sys.path.append(os.path.dirname(sys.path[0]))
 
@@ -15,3 +16,5 @@ df = qs.news_data()
 for _, new in df[df.发布时间 > release_time].iterrows():
     msg = new['内容']
     notify.send_msg_by_redis(msg)
+    time.sleep(5)
+
