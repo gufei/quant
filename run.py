@@ -13,6 +13,8 @@ import akshare as ak
 
 import qstock as qs
 
+import os
+
 # 初期资产
 cash = 200000
 symbol = "zz800"
@@ -36,6 +38,11 @@ if __name__ == '__main__':
 
     for _, stock in index_stock_cons_csindex_df.iterrows():
         file = "./data/day/" + stock['股票代码'] + ".csv"
+
+        if not os.path.isfile(file):
+            print(file + " 文件不存在")
+            continue
+
         data = bt.feeds.GenericCSVData(
             dataname=file,
             fromdate=datetime.datetime(2023, 1, 1),
