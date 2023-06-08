@@ -9,11 +9,13 @@ import qstock as qs
 import utils.notify as notify
 
 # 10分钟内新闻
-release_time = (datetime.datetime.now() + datetime.timedelta(minutes=-10)).time()
+release_datetime = (datetime.datetime.now() + datetime.timedelta(minutes=-10))
 
 df = qs.news_data()
 
-for _, new in df[df.发布时间 > release_time].iterrows():
+day_df = df[df.发布日期 == release_datetime.date()]
+
+for _, new in day_df[day_df.发布时间 > release_datetime.time()].iterrows():
     msg = new['内容']
     notify.send_msg_by_redis(msg)
     time.sleep(5)
