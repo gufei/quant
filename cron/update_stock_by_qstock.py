@@ -11,7 +11,7 @@ stock_arr = cf['股票代码'].tolist()
 stock_arr.append('510050')
 stock_arr.append('159949')
 
-df = qs.get_data(stock_arr, start=start_data)
+df = qs.get_data(stock_arr)
 order = ['open', 'close', 'high', 'low', 'volume', 'turnover', 'turnover_rate', 'name', 'code']
 df = df[order]
 
