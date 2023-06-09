@@ -1,6 +1,10 @@
 import backtrader as bt
 import datetime
-import redis
+import sys
+import os
+
+sys.path.append(os.path.dirname(sys.path[0]))
+import utils.notify as notify
 
 
 # 30天涨幅超过20%，并且在最近10天维持6%箱体振荡
@@ -21,11 +25,10 @@ class MyStrategy01(bt.Strategy):
         msg += "价格：%.2f" % data.lines.close[0] + "\n"
         msg += "符合购买条件，请人工审核后处理"
 
-        self.redis.rpush("notify_message", msg)
+        notify.send_msg_by_redis("stock", msg)
 
     def __init__(self):
         self.date_now = datetime.datetime.now().strftime('%Y-%m-%d')
-        self.redis = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
         self.sma = dict()
         for data in self.datas:
