@@ -6,10 +6,11 @@ symbol = "zz800"
 
 cf = qs.index_member(symbol)
 
-
 stock_arr = cf['股票代码'].tolist()
 stock_arr.append('510050')
 stock_arr.append('159949')
+
+stock_arr = ['159967', '512890']
 
 df = qs.get_data(stock_arr)
 order = ['open', 'close', 'high', 'low', 'volume', 'turnover', 'turnover_rate', 'name', 'code']
@@ -19,6 +20,3 @@ g_df = df.groupby('code')
 
 for name, group in g_df:
     group.to_csv("./data/day/" + name + ".csv")
-
-
-

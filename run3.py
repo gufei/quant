@@ -1,10 +1,18 @@
-# 大小盘轮动策略 回测 StrategyBigSmallRotate
+# 创成长ETF和红利低波ETF 轮动策略
+# https://mp.weixin.qq.com/s/80-JLBWLrzJQinmLDqqkyA
+# 选择创成长ETF和红利低波ETF作为投资组合的标的指数。
+# 每日计算两种指数过去21个交易日（含计算当日）的涨跌幅。
+# 比较两类ETF的涨幅，选择涨幅更大的ETF作为投资标的。
+# 根据涨幅更大的指数，以当日收盘价买入对应的ETF基金。
+# 持有所购买的ETF基金，直到下一个调仓日。
+# 每个调仓日重复以上步骤，根据涨幅更大的指数进行轮动投资。
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import datetime
 
 import backtrader as bt
+from backtrader.indicators import RateOfChange100
 
 import models.commissions.mycommission as my_commission
 
@@ -36,7 +44,7 @@ if __name__ == '__main__':
 
     # index_stock_cons_csindex_df = ak.index_stock_cons_csindex(symbol=symbol)
 
-    index_stock_cons_csindex_df = ['510050', '159949']
+    index_stock_cons_csindex_df = ['159967', '512890']
 
     for stock in index_stock_cons_csindex_df:
         file = "./data/day/" + stock + ".csv"
@@ -47,7 +55,7 @@ if __name__ == '__main__':
 
         data = bt.feeds.GenericCSVData(
             dataname=file,
-            fromdate=datetime.datetime(2023, 1, 1),
+            fromdate=datetime.datetime(2018, 1, 1),
             nullvalue=0.0,
             dtformat=('%Y-%m-%d'),
             datetime=0,
@@ -62,15 +70,12 @@ if __name__ == '__main__':
 
     cerebro.addstrategy(strategy_big_small_rotate.StrategyBigSmallRotate)
 
-    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='mysharpe')
+    # cerebro.addindicator(RateOfChange100)
 
     print('回测开始，资产价值: %.2f' % cerebro.broker.getvalue())
 
-    thestrats = cerebro.run()
-    thestrat = thestrats[0]
+    cerebro.run()
 
     print('回测完成，资产价值: %.2f' % cerebro.broker.getvalue())
-
-    print('Sharpe Ratio:', thestrat.analyzers.mysharpe.get_analysis())
 
     cerebro.plot()
