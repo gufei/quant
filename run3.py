@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
         data = bt.feeds.GenericCSVData(
             dataname=file,
-            fromdate=datetime.datetime(2018, 1, 1),
+            fromdate=datetime.datetime(2023, 1, 1),
             nullvalue=0.0,
             dtformat=('%Y-%m-%d'),
             datetime=0,

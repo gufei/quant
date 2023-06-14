@@ -1,23 +1,42 @@
 import backtrader as bt
 import datetime
 import redis
+import sys
+import os
+
+sys.path.append(os.path.dirname(sys.path[0]))
+import utils.notify as notify
 
 
 # https://mp.weixin.qq.com/s/g8TyAWZABtOc8Ir6vWe18Q
 # 大小盘轮动策略
 class StrategyBigSmallRotate(bt.Strategy):
-    params = dict(period=20)
+    params = dict(period=21)
 
     def log(self, txt, dt=None):
         """Logging function for this strategy"""
         dt = dt or self.datas[0].datetime.date(0)
         print('%s, %s' % (dt.isoformat(), txt))
 
-    def __init__(self):
+    def sendmsg(self, type="买入", data=None):
+        if not data:
+            return
 
+        if self.date_now.isoformat() == data.datetime.date(0).isoformat():
+            msg = "轮动策略运行报告\n"
+            msg += "日期：" + data.datetime.date(0).isoformat() + "\n"
+            msg += "标的：" + data._name + "\n"
+            msg += "价格：%.2f" % data.lines.close[0] + "\n"
+            msg += "方向：" + type
+
+            notify.send_msg_by_redis("stock", msg)
+
+    def __init__(self):
         self.sma = dict()
         self.stock_data = dict()
         self.rateOfChange100 = list(range(len(self.datas)))
+
+        self.date_now = datetime.datetime.now()
 
         for index, data in enumerate(self.datas):
             self.rateOfChange100[index] = bt.indicators.RateOfChange100(data, period=self.params.period)
@@ -73,6 +92,7 @@ class StrategyBigSmallRotate(bt.Strategy):
         if self.rateOfChange100[0] < 0 and self.rateOfChange100[1] < 0:
             for index, data in enumerate(self.datas):
                 if pos[index].size:
+                    self.sendmsg(type="卖出", data=data)
                     self.close(data=data)
             return
 
@@ -81,9 +101,11 @@ class StrategyBigSmallRotate(bt.Strategy):
                 return
             elif pos[1].size:
                 self.close(data=self.datas[1])
+                self.sendmsg(type="卖出", data=self.datas[1])
                 return
             else:
                 self.buy(data=self.datas[0])
+                self.sendmsg(type="买入", data=self.datas[0])
                 return
 
         if self.rateOfChange100[1] > 0 and self.rateOfChange100[1] > self.rateOfChange100[0]:
@@ -91,7 +113,9 @@ class StrategyBigSmallRotate(bt.Strategy):
                 return
             elif pos[0].size:
                 self.close(data=self.datas[0])
+                self.sendmsg(type="卖出", data=self.datas[0])
                 return
             else:
                 self.buy(data=self.datas[1])
+                self.sendmsg(type="买入", data=self.datas[1])
                 return

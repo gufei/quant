@@ -21,6 +21,7 @@ python run.py
 ### StrategyBigSmallRotate
 
 https://mp.weixin.qq.com/s/g8TyAWZABtOc8Ir6vWe18Q
+https://mp.weixin.qq.com/s/80-JLBWLrzJQinmLDqqkyA
 
 大小盘轮动策略
 
