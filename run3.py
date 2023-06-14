@@ -78,4 +78,4 @@ if __name__ == '__main__':
 
     print('回测完成，资产价值: %.2f' % cerebro.broker.getvalue())
 
-    cerebro.plot()
+    # cerebro.plot()
