@@ -13,7 +13,7 @@ stock_arr.append('159949')
 stock_arr.append('159967')
 stock_arr.append('512890')
 
-df = qs.get_data(stock_arr)
+df = qs.get_data(stock_arr,start=start_data)
 order = ['open', 'close', 'high', 'low', 'volume', 'turnover', 'turnover_rate', 'name', 'code']
 df = df[order]
 
