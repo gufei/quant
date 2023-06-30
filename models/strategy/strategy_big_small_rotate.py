@@ -21,10 +21,9 @@ class StrategyBigSmallRotate(bt.Strategy):
     def sendmsg(self, type="买入", data=None):
         if not data:
             return
-
-        if self.date_now.isoformat() == data.datetime.date(0).isoformat():
+        if self.date_now.strftime('%Y-%m-%d') == data.datetime.date(0).strftime('%Y-%m-%d'):
             msg = "轮动策略运行报告\n"
-            msg += "日期：" + data.datetime.date(0).isoformat() + "\n"
+            msg += "日期：" + data.datetime.date(0).strftime('%Y-%m-%d') + "\n"
             msg += "标的：" + data._name + "\n"
             msg += "价格：%.2f" % data.lines.close[0] + "\n"
             msg += "方向：" + type
