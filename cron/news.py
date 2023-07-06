@@ -16,7 +16,8 @@ df = qs.news_data()
 
 for _, new in df[(df.发布日期 == release_datetime.date()) & (df.发布时间 > release_datetime.time())].iterrows():
     msg = new['内容']
-    pattern = r"财联社\d+月\d+日电，"
-    msg = re.sub(pattern, "", msg)
+    pattern = r"财联社(\d+月\d+日)电，"
+    replacement = r"\1，"
+    msg = re.sub(pattern, replacement, msg)
     notify.send_msg_by_redis("news", msg)
     time.sleep(5)
