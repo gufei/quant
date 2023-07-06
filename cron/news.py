@@ -114,10 +114,6 @@ multitasking.wait_for_tasks()
 
 new_df = pd.concat(data_list, ignore_index=True)
 
-print(new_df)
-
-exit()
-
 for _, new in new_df.iterrows():
     msg = new['内容']
 
