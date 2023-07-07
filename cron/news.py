@@ -15,15 +15,81 @@ import multitasking
 import signal
 from tqdm import tqdm
 import requests
+import json
 
 signal.signal(signal.SIGINT, multitasking.killall)
 
 beijing_tz = pytz.timezone('Asia/Shanghai')
 
-new_columns = ["标题", "内容", "发布时间", "发布日期", "摘要", "链接"]
+new_columns = ["标题", "内容", "发布时间", "发布日期", "摘要", "链接", "来源"]
 
 # 10分钟内新闻
 release_datetime = (datetime.datetime.now() + datetime.timedelta(minutes=-10))
+
+
+def sendFs(new):
+    url = "https://open.feishu.cn/open-apis/bot/v2/hook/72b9d68a-8ece-4f4c-9a90-63f38bf32fc9"
+
+    payload = json.dumps({
+        "msg_type": "interactive",
+        "card": {
+            "elements": [
+                {
+                    "tag": "div",
+                    "fields": [
+                        {
+                            "is_short": False,
+                            "text": {
+                                "tag": "lark_md",
+                                "content": "**发布时间：**" + new['发布日期'] + " " + new['发布时间']
+                            }
+                        }
+                    ]
+                },
+                {
+                    "tag": "hr"
+                },
+                {
+                    "tag": "div",
+                    "text": {
+                        "content": new['摘要'],
+                        "tag": "lark_md"
+                    }
+                },
+                {
+                    "tag": "hr"
+                },
+                {
+                    "actions": [
+                        {
+                            "tag": "button",
+                            "text": {
+                                "content": "阅读原文",
+                                "tag": "lark_md"
+                            },
+                            "url": new['链接'],
+                            "type": "primary",
+                            "value": {}
+                        }
+                    ],
+                    "tag": "action"
+                }
+            ],
+            "header": {
+                "title": {
+                    "content": new['标题'],
+                    "tag": "plain_text"
+                },
+                "template": "green"
+            }
+        }
+    })
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    requests.request("POST", url, headers=headers, data=payload)
 
 
 def odaily_news(start=None, end=None):
@@ -49,9 +115,10 @@ def odaily_news(start=None, end=None):
         df = df[df.发布时间 >= start]
     if end is not None:
         df = df[df.发布时间 <= end]
-    df["发布日期"] = df["发布时间"].dt.date
-    df["发布时间"] = df["发布时间"].dt.time
+    df["发布日期"] = df["发布时间"].dt.strftime("%Y-%m-%d")
+    df["发布时间"] = df["发布时间"].dt.strftime("%H:%M:%S")
     df["内容"] = "【" + df["标题"] + "】" + df["摘要"]
+    df["来源"] = "odaily"
 
     return df.reindex(columns=new_columns)
 
@@ -66,7 +133,7 @@ data_list = [cls_df, odaily_df]
 
 
 @multitasking.task
-def rss_news(url, datetime_format="%Y-%m-%d %H:%M:%S", is_utc=False, start=None, end=None):
+def rss_news(url, datetime_format="%Y-%m-%d %H:%M:%S", is_utc=False, start=None, end=None, source=""):
     # 解析RSS订阅源
     feed = feedparser.parse(url)
     # 创建一个空的DataFrame来存储数据
@@ -96,7 +163,7 @@ def rss_news(url, datetime_format="%Y-%m-%d %H:%M:%S", is_utc=False, start=None,
         entry_Data = {"标题": [title], "内容": ["【" + title + "】" + summary],
                       "发布时间": [published_datetime.strftime("%H:%M:%S")],
                       "发布日期": [published_datetime.strftime("%Y-%m-%d")],
-                      "摘要": [summary], "链接": [link]}
+                      "摘要": [summary], "链接": [link], "来源": source}
         entry_df = pd.DataFrame(entry_Data)
 
         data = pd.concat([data, entry_df], ignore_index=True)
@@ -106,9 +173,9 @@ def rss_news(url, datetime_format="%Y-%m-%d %H:%M:%S", is_utc=False, start=None,
 
 pbar = tqdm(total=2)
 rss_news("https://www.chaincatcher.com/rss/clist", datetime_format="%Y-%m-%d %H:%M:%S",
-         start=release_datetime)
+         start=release_datetime, source="chaincatcher")
 rss_news("https://rss.panewslab.com/zh/tvsq/rss", datetime_format="%a, %d %b %Y %H:%M:%S %z",
-         start=release_datetime)
+         start=release_datetime, source="panewslab")
 
 multitasking.wait_for_tasks()
 
@@ -116,7 +183,6 @@ new_df = pd.concat(data_list, ignore_index=True)
 
 for _, new in new_df.iterrows():
     msg = new['内容']
-
     # pattern = r"财联社(\d+月\d+日)电，"
     # replacement = r"\1，"
     # msg = re.sub(pattern, replacement, msg)
@@ -132,4 +198,8 @@ for _, new in new_df.iterrows():
     # msg = re.sub(pattern, "", msg)
 
     notify.send_msg_by_redis("news", msg)
+
+    if new["来源"] in ["chaincatcher", "panewslab", "odaily"]:
+        sendFs(new)
+
     time.sleep(5)
