@@ -236,7 +236,7 @@ for _, new in new_df.iterrows():
 
     notify.send_msg_by_redis("news", msg)
 
-    if new["来源"] in ["chaincatcher", "panewslab", "odaily"]:
+    if new["来源"] in ["chaincatcher", "panewslab", "odaily", "binance"]:
         sendFs(new)
 
     time.sleep(5)
