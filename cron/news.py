@@ -123,13 +123,50 @@ def odaily_news(start=None, end=None):
     return df.reindex(columns=new_columns)
 
 
+def binance_news(start=None, end=None):
+    url = "https://www.binance.com/bapi/composite/v1/friendly/pgc/news/list"
+    headers = {
+        "Content-Type": "application/json",
+        "lang": "zh-CN",
+        "Referer": "https://www.binance.com/zh-CN/feed/news",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    }
+    payload = json.dumps({
+        "pageIndex": 1,
+        "pageSize": 50
+    })
+    data = requests.post(url, headers=headers, data=payload).json()
+
+    df = pd.DataFrame(data["data"]["vos"])
+    df = df[["title", "subTitle", "date", "webLink"]]
+    df["date"] = pd.to_datetime(df["date"], unit='s').dt.tz_localize('UTC').dt.tz_convert("Asia/Shanghai")
+    df.columns = ["标题", "摘要", "发布时间", "链接"]
+    df.sort_values(["发布时间"], ascending=False, inplace=True)
+    df.reset_index(inplace=True, drop=True)
+
+    if start is not None:
+        start_beijing = start.astimezone(beijing_tz)
+        df = df[df.发布时间 >= start_beijing]
+    if end is not None:
+        end_beijing = end.astimezone(beijing_tz)
+        df = df[df.发布时间 <= end_beijing]
+    df["发布日期"] = df["发布时间"].dt.strftime("%Y-%m-%d")
+    df["发布时间"] = df["发布时间"].dt.strftime("%H:%M:%S")
+    df["内容"] = "【" + df["标题"] + "】" + df["摘要"]
+    df["来源"] = "binance"
+
+    return df.reindex(columns=new_columns)
+
+
+binance_df = binance_news(start=release_datetime)
+
 odaily_df = odaily_news(start=release_datetime)
 
 cls_df = qs.news_data()
 
 cls_df = cls_df[(cls_df.发布日期 == release_datetime.date()) & (cls_df.发布时间 > release_datetime.time())]
 
-data_list = [cls_df, odaily_df]
+data_list = [cls_df, odaily_df, binance_df]
 
 
 @multitasking.task
