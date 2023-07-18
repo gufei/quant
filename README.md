@@ -23,6 +23,11 @@ python run.py
 https://mp.weixin.qq.com/s/g8TyAWZABtOc8Ir6vWe18Q
 https://mp.weixin.qq.com/s/80-JLBWLrzJQinmLDqqkyA
 
+### MomentumStrategy
+动量轮动策略
+https://mp.weixin.qq.com/s/2pl_Vv64yoI5GhPyN1t4Aw
+python momentum.py
+
 大小盘轮动策略
 
 
