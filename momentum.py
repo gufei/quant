@@ -13,12 +13,19 @@ if __name__ == '__main__':
 
     # 初始资金设置
     cerebro.broker.setcash(cash)
+    # 防止下单时现金不够被拒绝。只在执行时检查现金够不够。
+    cerebro.broker.set_checksubmit(False)
+
+    # 股票模式
+    cerebro.broker.setcommission(stocklike=True)
+    # 这个是设置以当天收盘价提交订单，但是好像不起作用
+    # cerebro.broker.set_coc(True)
 
     # 万五的手续费
     commission = my_commission.MyCommission(commission=0.05)  # 0.05%
     cerebro.broker.addcommissioninfo(commission)
 
-    # 每次都是全仓
+    # 每次都是全仓,由于是下一档开盘成交，所以设置100的话会触发金额不足
     cerebro.addsizer(bt.sizers.AllInSizerInt, percents=95)
 
     index_stock_cons_csindex_df = ['518880', '513100', '159915', '510300']
