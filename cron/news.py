@@ -31,7 +31,7 @@ def sendWxHook(new):
     url = "http://172.23.24.97:30001/SendTextMsg"
 
     payload = json.dumps({
-        "wxid": "wxid_4zq1z1z1z1z1",
+        "wxid": "34962679447@chatroom",
         "msg": new['摘要']
     })
 
