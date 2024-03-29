@@ -27,6 +27,21 @@ new_columns = ["标题", "内容", "发布时间", "发布日期", "摘要", "�
 release_datetime = (datetime.datetime.now() + datetime.timedelta(minutes=-10))
 
 
+def sendWxHook(new):
+    url = "http://172.23.24.97:30001/SendTextMsg"
+
+    payload = json.dumps({
+        "wxid": "wxid_4zq1z1z1z1z1",
+        "msg": new['摘要']
+    })
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    requests.request("POST", url, headers=headers, data=payload)
+
+
 def sendFs(new):
     url = "https://open.feishu.cn/open-apis/bot/v2/hook/72b9d68a-8ece-4f4c-9a90-63f38bf32fc9"
 
@@ -219,7 +234,7 @@ multitasking.wait_for_tasks()
 new_df = pd.concat(data_list, ignore_index=True)
 
 for _, new in new_df.iterrows():
-    msg = new['内容']
+    # msg = new['内容']
     # pattern = r"财联社(\d+月\d+日)电，"
     # replacement = r"\1，"
     # msg = re.sub(pattern, replacement, msg)
@@ -234,9 +249,11 @@ for _, new in new_df.iterrows():
     # pattern = r"ChainCatcher 消息，"
     # msg = re.sub(pattern, "", msg)
 
-    notify.send_msg_by_redis("news", msg)
+    # notify.send_msg_by_redis("news", msg)
+
+    sendWxHook(new)
 
     if new["来源"] in ["chaincatcher", "panewslab", "odaily", "binance"]:
         sendFs(new)
 
-    time.sleep(5)
+    time.sleep(1)
