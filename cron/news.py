@@ -32,11 +32,7 @@ release_datetime = (datetime.datetime.now() + datetime.timedelta(minutes=-10))
 def sendWxHook(new):
     url = "http://172.23.24.97:30001/SendTextMsg"
 
-
-    if new['摘要']:
-        soup = BeautifulSoup(new['摘要'], 'html.parser')
-    else:
-        return
+    soup = BeautifulSoup(new['摘要'], 'html.parser')
 
     payload = json.dumps({
         "wxid": "34962679447@chatroom",
@@ -258,6 +254,8 @@ for _, new in new_df.iterrows():
     # msg = re.sub(pattern, "", msg)
 
     # notify.send_msg_by_redis("news", msg)
+
+    new = new.fillna()
 
     sendWxHook(new)
 
