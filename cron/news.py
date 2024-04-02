@@ -2,6 +2,8 @@ import sys
 import os
 import time
 
+from bs4 import BeautifulSoup
+
 sys.path.append(os.path.dirname(sys.path[0]))
 
 import datetime
@@ -30,9 +32,11 @@ release_datetime = (datetime.datetime.now() + datetime.timedelta(minutes=-10))
 def sendWxHook(new):
     url = "http://172.23.24.97:30001/SendTextMsg"
 
+    soup = BeautifulSoup(new['摘要'], 'html.parser')
+
     payload = json.dumps({
         "wxid": "34962679447@chatroom",
-        "msg": new['摘要']
+        "msg": soup.get_text()
     })
 
     headers = {
