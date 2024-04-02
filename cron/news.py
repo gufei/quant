@@ -267,8 +267,6 @@ for _, new in new_df.iterrows():
 
     # notify.send_msg_by_redis("news", msg)
 
-    new = new.fillna()
-
     sendWxHook(new)
 
     if new["来源"] in ["chaincatcher", "panewslab", "odaily", "binance"]:
