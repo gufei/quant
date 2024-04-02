@@ -32,11 +32,16 @@ release_datetime = (datetime.datetime.now() + datetime.timedelta(minutes=-10))
 def sendWxHook(new):
     url = "http://172.23.24.97:30001/SendTextMsg"
 
-    soup = BeautifulSoup(new['摘要'], 'html.parser')
+    try:
+        soup = BeautifulSoup(new['摘要'], 'html5lib')
+        text = soup.get_text()
+    except:
+        print(new['摘要'])
+        text = new['摘要']
 
     payload = json.dumps({
         "wxid": "34962679447@chatroom",
-        "msg": soup.get_text()
+        "msg": text
     })
 
     headers = {
