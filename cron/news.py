@@ -47,7 +47,7 @@ def sendWxHook(new):
 
 
 def sendFs(new):
-    url = "https://open.feishu.cn/open-apis/bot/v2/hook/72b9d68a-8ece-4f4c-9a90-63f38bf32fc9"
+    url = "https://open.larksuite.com/open-apis/bot/v2/hook/2c3ea65b-9c07-46b6-b77e-6b6bfc506952"
 
     payload = json.dumps({
         "msg_type": "interactive",
@@ -71,7 +71,7 @@ def sendFs(new):
                 {
                     "tag": "div",
                     "text": {
-                        "content": new['摘要'],
+                        "content": BeautifulSoup(new['摘要'], 'html.parser').get_text(),
                         "tag": "lark_md"
                     }
                 },
