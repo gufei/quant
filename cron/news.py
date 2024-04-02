@@ -36,8 +36,7 @@ def sendWxHook(new):
         soup = BeautifulSoup(new['摘要'], 'html5lib')
         text = soup.get_text()
     except:
-        print(new['摘要'])
-        text = new['摘要']
+        return
 
     payload = json.dumps({
         "wxid": "34962679447@chatroom",
@@ -58,8 +57,7 @@ def sendFs(new):
         soup = BeautifulSoup(new['摘要'], 'html5lib')
         text = soup.get_text()
     except:
-        print(new['摘要'])
-        text = new['摘要']
+        return
 
     payload = json.dumps({
         "msg_type": "interactive",
